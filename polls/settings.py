@@ -25,13 +25,33 @@ SECRET_KEY = 'mm0%@+@_@k#evr7-kle3+8_8@d-h6g=a-+-9m+0+m+w*l14z+f'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['.localhost']
 
+DEFAULT_FILE_STORAGE = 'tenant_schemas.storage.TenantFileSystemStorage'
 
 # Application definition
 
+SHARED_APPS = (
+    'tenant_schemas',
+    'polls',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+)
+
+TENANT_APPS = (
+    'django.contrib.contenttypes',
+    'polls'
+)
+
+TENANT_MODEL = "polls.Customer"
+
 INSTALLED_APPS = [
-    'polls.apps.PollsConfig',
+    'tenant_schemas',
+    'polls',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -41,6 +61,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'tenant_schemas.middleware.TenantMiddleware',
+    'tenant_schemas.middleware.DefaultTenantMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -76,10 +98,14 @@ WSGI_APPLICATION = 'polls.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'tenant_schemas.postgresql_backend',
         'NAME': 'tutorial',
     }
 }
+
+DATABASE_ROUTERS = (
+    'tenant_schemas.routers.TenantSyncRouter',
+)
 
 
 # Password validation

@@ -4,10 +4,13 @@ from django.test import TestCase
 from django.utils import timezone
 from django.urls import reverse
 
+from tenant_schemas.test.cases import TenantTestCase
+from tenant_schemas.test.client import TenantClient
+
 from .models import Question
 
 
-class QuestionModelsTest(TestCase):
+class QuestionModelsTest(TenantTestCase):
     def test_was_published_recently_with_future_question(self):
         """
         was_published_recently() returns False for questions whose pub_date
@@ -45,7 +48,10 @@ def create_question(question_text, days):
     return Question.objects.create(question_text=question_text, pub_date=time)
 
 
-class QuestionIndexViewTests(TestCase):
+class QuestionIndexViewTests(TenantTestCase):
+    def setUp(self):
+        self.client = TenantClient(self.tenant)
+
     def test_no_questions(self):
         """
         If no questions exist, an appropriate message is displayed.
@@ -102,7 +108,10 @@ class QuestionIndexViewTests(TestCase):
             ['<Question: Past question 2.>', '<Question: Past question 1.>']
         )
 
-class QuestionDetailViewTests(TestCase):
+class QuestionDetailViewTests(TenantTestCase):
+    def setUp(self):
+        self.client = TenantClient(self.tenant)
+
     def test_future_question(self):
         """
         The detail view of a question with a pub_date in the future
@@ -120,5 +129,6 @@ class QuestionDetailViewTests(TestCase):
         """
         past_question = create_question(question_text='Past Question.', days=-5)
         url = reverse('detail', args=(past_question.id,))
+        print(url)
         response = self.client.get(url)
         self.assertContains(response, past_question.question_text)
